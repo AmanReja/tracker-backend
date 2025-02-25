@@ -25,8 +25,9 @@ io.on("connection", (socket) => {
 
   socket.emit("welcome", "Welcome to the server!");
   socket.on("geolocation", (location) => {
-    console.log("received geo from clint", location);
-    socket.broadcast.emit("location-update", location);
+    io.emit("location-update", { id: socket.id, ...location });
+    console.log("received geo from clint", ...location);
+    socket.broadcast.emit("location-update", ...location);
   });
 
   socket.on("disconnect", () => {
