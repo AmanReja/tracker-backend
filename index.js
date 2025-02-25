@@ -16,6 +16,8 @@ const io = socketIo(server, {
 });
 app.use(cors());
 
+const activeUsers = {}; // Store active users and their locations
+
 app.get("/", (req, res) => {
   res.send("hii");
 });
@@ -24,14 +26,18 @@ io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
   socket.emit("welcome", "Welcome to the server!");
+
   socket.on("geolocation", (location) => {
-    io.emit("location-update", { id: socket.id, ...location });
-    console.log("received geo from clint", ...location);
-    socket.broadcast.emit("location-update", ...location);
+    activeUsers[socket.id] = location; // Update user location
+    console.log("Received geo from client:", socket.id, location);
+
+    io.emit("location-update", activeUsers); // Send updated locations to all clients
   });
 
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log("User disconnected", socket.id);
+    delete activeUsers[socket.id]; // Remove user from active list
+    io.emit("location-update", activeUsers); // Notify others about the update
   });
 });
 
