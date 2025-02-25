@@ -15,7 +15,7 @@ const io = socketIo(server, {
 });
 app.use(cors());
 
-const activeUsers = {}; // Store users' locations
+const activeUsers = {};
 
 app.get("/", (req, res) => {
   res.send("hii");
@@ -25,14 +25,14 @@ io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
   socket.on("geolocation", (location) => {
-    activeUsers[socket.id] = location; // Save location with socket ID
-    io.emit("receive-location", activeUsers); // Broadcast all locations
+    activeUsers[socket.id] = location;
+    io.emit("receive-location", activeUsers);
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
-    delete activeUsers[socket.id]; // Remove user on disconnect
-    io.emit("receive-location", activeUsers); // Send updated list
+    delete activeUsers[socket.id];
+    io.emit("receive-location", activeUsers);
   });
 });
 
