@@ -16,6 +16,10 @@ const io = socketIo(server, {
 });
 app.use(cors());
 
+app.get("/", (req, res) => {
+  res.send("hii");
+});
+
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
