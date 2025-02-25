@@ -1,10 +1,9 @@
 const express = require("express");
 const http = require("http");
-const path = require("path");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const port = 3000;
 
+const port = 3000;
 const app = express();
 const server = http.createServer(app);
 
@@ -16,22 +15,24 @@ const io = socketIo(server, {
 });
 app.use(cors());
 
+const activeUsers = {}; // Store users' locations
+
 app.get("/", (req, res) => {
   res.send("hii");
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
+  console.log("A user connected:", socket.id);
 
-  socket.emit("welcome", "Welcome to the server!");
   socket.on("geolocation", (location) => {
-    io.emit("receive-location", { id: socket.id, ...location });
-    console.log("received geo from clint", ...location);
-    // socket.broadcast.emit("location-update", ...location);
+    activeUsers[socket.id] = location; // Save location with socket ID
+    io.emit("receive-location", activeUsers); // Broadcast all locations
   });
 
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log("User disconnected:", socket.id);
+    delete activeUsers[socket.id]; // Remove user on disconnect
+    io.emit("receive-location", activeUsers); // Send updated list
   });
 });
 
